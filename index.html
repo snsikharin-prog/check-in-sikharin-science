@@ -1,0 +1,810 @@
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f3f6fc">
+<title>ระบบเช็กชื่อเข้าเรียน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --blue:#315fe9; --blue-dark:#244bc5; --blue-light:#edf2ff;
+  --bg:#f3f6fc; --text:#202b45; --muted:#778198;
+  --line:#e5eaf3; --green:#16865c; --red:#c73c50;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Noto Sans Thai",sans-serif;font-size:15px;line-height:1.6}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.55;cursor:not-allowed}
+.container{width:min(100% - 24px,720px);margin:auto;padding:20px 0 35px}
+.header{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.logo{display:grid;place-items:center;width:48px;height:48px;border-radius:16px;background:var(--blue);color:white;font-size:24px;font-weight:800}
+.header h1{margin:0;font-size:18px;font-weight:800}
+.header p{margin:2px 0 0;color:var(--muted);font-size:12px}
+.admin-open{margin-left:auto;padding:9px 12px;border:1px solid var(--line);border-radius:12px;background:white;color:var(--text);font-size:12px;font-weight:700}
+.hero{padding:25px 23px;margin-bottom:16px;border-radius:26px;color:white;background:linear-gradient(125deg,#315fe9,#6979ed);box-shadow:0 12px 28px #315fe91c}
+.hero-tag{display:inline-block;padding:5px 11px;margin-bottom:10px;border-radius:999px;background:#ffffff24;font-size:12px}
+.hero h2{margin:0;font-size:clamp(25px,5vw,32px);line-height:1.4}
+.hero p{margin:7px 0 0;color:#ffffffdf;font-size:14px}
+.date-chip{display:inline-block;margin-top:16px;padding:7px 12px;border-radius:12px;background:#ffffff24;font-size:13px}
+.system-banner{padding:12px 15px;margin-bottom:16px;border-radius:15px;font-size:13px;font-weight:700}
+.system-banner.open{background:#e8f8ef;color:var(--green)}
+.system-banner.closed{background:#fff0f1;color:var(--red)}
+.card{padding:21px;margin-bottom:15px;border:1px solid var(--line);border-radius:20px;background:white;box-shadow:0 5px 22px #273b6810}
+.card-title{display:flex;align-items:center;gap:11px;margin:0 0 17px}
+.card-title .icon{display:grid;place-items:center;width:42px;height:42px;flex-shrink:0;border-radius:14px;background:var(--blue-light);font-size:21px}
+.card-title h3{margin:0;font-size:17px;font-weight:800}
+.card-title p{margin:2px 0 0;color:var(--muted);font-size:12px}
+.subject-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.subject{display:flex;align-items:center;gap:10px;min-height:65px;padding:12px;border:1.5px solid var(--line);border-radius:15px;background:white;color:var(--text);text-align:left}
+.subject.selected{border-color:var(--blue);background:var(--blue-light);box-shadow:inset 0 0 0 1px var(--blue)}
+.subject-icon{display:grid;place-items:center;width:34px;height:34px;flex-shrink:0;border-radius:11px;background:#edf1fa}
+.subject-name{flex:1;font-size:13px;font-weight:700;overflow-wrap:anywhere}
+.check{color:var(--blue);font-weight:800}
+.field{margin-top:16px}
+.field:first-child{margin-top:0}
+.field-label{display:block;margin-bottom:7px;font-size:14px;font-weight:700}
+.input,.textarea{width:100%;min-height:50px;padding:11px 13px;border:1.5px solid #dfe5f0;border-radius:14px;background:#fbfcff;color:var(--text)}
+.input:focus,.textarea:focus{outline:3px solid #315fe91b;border-color:var(--blue)}
+.student-id{min-height:62px;font-size:25px;font-weight:800;letter-spacing:7px;text-align:center}
+.button{display:flex;justify-content:center;align-items:center;gap:8px;width:100%;min-height:51px;padding:12px 16px;margin-top:16px;border:0;border-radius:15px;background:var(--blue);color:white;font-weight:800}
+.button:hover{background:var(--blue-dark)}
+.button.secondary{background:var(--blue-light);color:var(--blue-dark)}
+.student-info{padding:15px;margin-top:15px;border:1px solid #c8ead8;border-radius:16px;background:#f0fbf5}
+.student-info h4{margin:0 0 10px;color:var(--green);font-size:13px}
+.student-name{margin:0 0 12px;font-size:19px;font-weight:800;overflow-wrap:anywhere}
+.student-details{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.detail{padding:9px 5px;border-radius:11px;background:white;text-align:center}
+.detail small{display:block;color:var(--muted);font-size:11px}
+.detail strong{display:block;margin-top:3px;font-size:14px}
+.choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.choice{position:relative;display:block}
+.choice input{position:absolute;opacity:0;pointer-events:none}
+.choice-face{display:flex;align-items:center;gap:9px;min-height:65px;padding:10px;border:1.5px solid var(--line);border-radius:15px;background:white}
+.choice input:checked+.choice-face{border-color:var(--blue);background:var(--blue-light);box-shadow:inset 0 0 0 1px var(--blue)}
+.choice-emoji{font-size:21px}
+.choice-text{font-size:13px;font-weight:700}
+.choice-text small{display:block;color:var(--muted);font-size:11px;font-weight:400}
+.status-grid .choice:last-child:nth-child(odd){grid-column:1/-1}
+.remark-box{padding:14px;margin-top:13px;border-radius:15px;background:#fff8e8;border:1px solid #f0dfb3}
+.summary{padding:15px;margin-top:18px;border-radius:16px;background:#f5f7fc}
+.summary h4{margin:0 0 10px;font-size:14px}
+.summary-row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #e5eaf3;font-size:13px}
+.summary-row:last-child{border-bottom:0}
+.summary-row span:first-child{color:var(--muted);flex-shrink:0}
+.summary-row strong{text-align:right;overflow-wrap:anywhere}
+.alert{padding:12px 14px;margin-top:13px;border-radius:13px;font-size:13px}
+.alert.error{color:var(--red);background:#fff0f1;border:1px solid #f4d1d6}
+.alert.success{color:var(--green);background:#eaf8f0;border:1px solid #c9ead7}
+.footer{padding:14px 5px;color:var(--muted);text-align:center;font-size:12px}
+.hidden{display:none!important}
+
+/* การ์ดกลางหน้าจอ */
+.overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:18px;background:#18213b75;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+.overlay.hidden{display:none!important}
+.dialog{width:min(100%,390px);max-height:90vh;overflow-y:auto;padding:25px 22px 22px;border:1px solid #ffffffcc;border-radius:27px;background:white;box-shadow:0 24px 80px #0f1c4638;text-align:center;animation:dialogIn .2s ease}
+.dialog-icon{display:grid;place-items:center;width:70px;height:70px;margin:0 auto 15px;border-radius:23px;background:var(--blue-light);color:var(--blue);font-size:32px;font-weight:800}
+.dialog-icon.success{background:#e8f8ef;color:var(--green)}
+.dialog-icon.error{background:#fff0f1;color:var(--red)}
+.dialog-icon.warning{background:#fff5dc;color:#a76a00}
+.dialog h2{margin:0;font-size:21px;font-weight:800}
+.dialog-message{margin:8px 0 0;color:var(--muted);font-size:14px;white-space:pre-line;overflow-wrap:anywhere}
+.spinner{width:32px;height:32px;border:4px solid #dbe4ff;border-top-color:var(--blue);border-radius:50%;animation:spin .75s linear infinite}
+.progress{display:flex;gap:6px;margin:20px 0 8px}
+.progress span{flex:1;height:5px;border-radius:99px;background:#e8ecf5}
+.progress span.active{background:var(--blue)}
+.progress span.complete{background:var(--green)}
+.stage{margin:0;color:#8992a7;font-size:11px}
+.dialog-button{width:100%;min-height:48px;padding:11px 15px;margin-top:20px;border:0;border-radius:14px;background:var(--blue);color:white;font-weight:800}
+.dialog-button.secondary{background:var(--blue-light);color:var(--blue-dark)}
+.dialog-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:20px}
+.dialog-actions .dialog-button{margin-top:0}
+.dialog-input{width:100%;min-height:49px;padding:12px;margin-top:17px;border:1.5px solid var(--line);border-radius:13px;background:#fbfcff}
+.admin-status{padding:12px;border-radius:13px;margin-top:14px;font-size:13px;font-weight:700}
+.admin-status.open{background:#e8f8ef;color:var(--green)}
+.admin-status.closed{background:#fff0f1;color:var(--red)}
+.admin-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:15px}
+.admin-actions button{margin:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes dialogIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:480px){
+  .container{width:calc(100% - 18px);padding-top:13px}
+  .hero{padding:22px 18px}
+  .card{padding:17px 14px}
+  .subject-list{grid-template-columns:1fr}
+  .subject{min-height:59px}
+  .choice-grid{gap:7px}
+  .choice-face{padding:9px 8px;gap:7px}
+  .choice-text{font-size:12px}
+  .header h1{font-size:16px}
+  .admin-open{padding:8px;font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+
+<body>
+<main class="container">
+  <header class="header">
+    <div class="logo">✓</div>
+    <div>
+      <h1>ระบบเช็กชื่อเข้าเรียน</h1>
+      <p>บันทึกการเข้าเรียนออนไลน์</p>
+    </div>
+    <button id="adminOpenButton" class="admin-open" type="button">⚙ ผู้ดูแลระบบ</button>
+  </header>
+
+  <section class="hero">
+    <span class="hero-tag">📚 สำหรับนักเรียน</span>
+    <h2>เช็กชื่อเข้าเรียน</h2>
+    <p>เลือกรายวิชา กรอกรหัสนักเรียน แล้วบันทึกการเข้าเรียน</p>
+    <div class="date-chip">📅 <span id="todayText">-</span></div>
+  </section>
+
+  <div id="systemBanner" class="system-banner open">กำลังตรวจสอบสถานะระบบ...</div>
+
+  <section id="studentFormArea">
+    <section class="card">
+      <div class="card-title"><div class="icon">📘</div><div><h3>เลือกรายวิชา</h3><p>เลือกวิชาที่กำลังเข้าเรียน</p></div></div>
+      <div id="subjectList" class="subject-list">กำลังโหลดรายวิชา...</div>
+      <div id="subjectAlert" class="alert error hidden" role="alert"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-title"><div class="icon">🪪</div><div><h3>ข้อมูลนักเรียน</h3><p>กรอกรหัสนักเรียน 5 หลัก</p></div></div>
+      <form id="lookupForm" novalidate>
+        <div class="field">
+          <label class="field-label" for="studentId">รหัสนักเรียน</label>
+          <input class="input student-id" id="studentId" type="text" inputmode="numeric" maxlength="5" placeholder="00000" autocomplete="off">
+        </div>
+        <button class="button" id="lookupButton" type="submit">🔎 ตรวจสอบข้อมูล</button>
+      </form>
+      <div id="lookupAlert" class="alert hidden" role="alert"></div>
+      <div id="studentInfo" class="student-info hidden">
+        <h4>✓ พบข้อมูลนักเรียน</h4>
+        <p id="studentName" class="student-name">-</p>
+        <div class="student-details">
+          <div class="detail"><small>ชั้น</small><strong id="studentClass">-</strong></div>
+          <div class="detail"><small>ห้อง</small><strong id="studentRoom">-</strong></div>
+          <div class="detail"><small>เลขที่</small><strong id="studentNumber">-</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-title"><div class="icon">📝</div><div><h3>บันทึกการเข้าเรียน</h3><p>เลือกวันที่ ชั่วโมง และสถานะ</p></div></div>
+      <div class="field">
+        <label class="field-label" for="attendanceDate">วันที่เข้าเรียน</label>
+        <input class="input" type="date" id="attendanceDate">
+      </div>
+
+      <div class="field">
+        <span class="field-label">จำนวนชั่วโมง</span>
+        <div class="choice-grid">
+          <label class="choice"><input type="radio" name="hours" value="1" checked><span class="choice-face"><span class="choice-emoji">⏱️</span><span class="choice-text">1 ชั่วโมง<small>50 นาที</small></span></span></label>
+          <label class="choice"><input type="radio" name="hours" value="2"><span class="choice-face"><span class="choice-emoji">🕒</span><span class="choice-text">2 ชั่วโมง<small>100 นาที</small></span></span></label>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="field-label">สถานะการเข้าเรียน</span>
+        <div class="choice-grid status-grid">
+          <label class="choice"><input type="radio" name="status" value="มาเรียน" checked><span class="choice-face"><span class="choice-emoji">✅</span><span class="choice-text">มาเรียน</span></span></label>
+          <label class="choice"><input type="radio" name="status" value="ขาดเรียน"><span class="choice-face"><span class="choice-emoji">❌</span><span class="choice-text">ขาดเรียน</span></span></label>
+          <label class="choice"><input type="radio" name="status" value="ลากิจ"><span class="choice-face"><span class="choice-emoji">🗓️</span><span class="choice-text">ลากิจ</span></span></label>
+          <label class="choice"><input type="radio" name="status" value="ลาป่วย"><span class="choice-face"><span class="choice-emoji">🩺</span><span class="choice-text">ลาป่วย</span></span></label>
+          <label class="choice"><input type="radio" name="status" value="หนีเรียน"><span class="choice-face"><span class="choice-emoji">⚠️</span><span class="choice-text">หนีเรียน</span></span></label>
+        </div>
+      </div>
+
+      <div id="remarkBox" class="remark-box hidden">
+        <label class="field-label" for="remark">เหตุผลในการลากิจ</label>
+        <textarea class="textarea" id="remark" rows="3" placeholder="ระบุเหตุผลในการลากิจ"></textarea>
+      </div>
+
+      <div class="summary">
+        <h4>ตรวจสอบข้อมูล</h4>
+        <div class="summary-row"><span>รายวิชา</span><strong id="summarySubject">ยังไม่ได้เลือก</strong></div>
+        <div class="summary-row"><span>นักเรียน</span><strong id="summaryStudent">ยังไม่ได้ตรวจสอบ</strong></div>
+        <div class="summary-row"><span>วันที่</span><strong id="summaryDate">-</strong></div>
+        <div class="summary-row"><span>ชั่วโมง</span><strong id="summaryHours">1 ชั่วโมง</strong></div>
+        <div class="summary-row"><span>สถานะ</span><strong id="summaryStatus">มาเรียน</strong></div>
+      </div>
+
+      <div id="saveAlert" class="alert hidden" role="alert"></div>
+      <button class="button" id="saveButton" type="button">📤 บันทึกการเข้าเรียน</button>
+      <button class="button secondary hidden" id="resetButton" type="button">เริ่มรายการใหม่</button>
+    </section>
+  </section>
+
+  <footer class="footer">ระบบเช็กชื่อเข้าเรียนออนไลน์</footer>
+</main>
+
+<!-- การ์ดแจ้งเตือนและยืนยันแบบกำหนดเอง -->
+<div id="statusOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="statusTitle" aria-describedby="statusMessage">
+  <div class="dialog">
+    <div id="statusIcon" class="dialog-icon"><div class="spinner"></div></div>
+    <h2 id="statusTitle">กำลังดำเนินการ</h2>
+    <p id="statusMessage" class="dialog-message">กรุณารอสักครู่</p>
+    <div id="progress" class="progress"><span></span><span></span><span></span></div>
+    <p id="stage" class="stage">ขั้นตอนที่ 1 จาก 3</p>
+
+    <button id="statusClose" class="dialog-button hidden" type="button">ตกลง</button>
+
+    <div id="confirmActions" class="dialog-actions hidden">
+      <button id="confirmCancel" class="dialog-button secondary" type="button">ยกเลิก</button>
+      <button id="confirmAccept" class="dialog-button" type="button">ยืนยัน</button>
+    </div>
+  </div>
+</div>
+
+<!-- หน้าต่างผู้ดูแล -->
+<div id="adminOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="adminTitle">
+  <div class="dialog">
+    <div class="dialog-icon">⚙</div>
+    <h2 id="adminTitle">ผู้ดูแลระบบ</h2>
+    <p class="dialog-message">กรอกรหัสผ่านเพื่อจัดการสถานะการเช็กชื่อ</p>
+
+    <div id="adminLoginArea">
+      <input id="adminPassword" class="dialog-input" type="password" autocomplete="current-password" placeholder="รหัสผ่านผู้ดูแลระบบ">
+      <button id="adminLoginButton" class="dialog-button" type="button">เข้าสู่ระบบผู้ดูแล</button>
+    </div>
+
+    <div id="adminControlArea" class="hidden">
+      <div id="adminCurrentStatus" class="admin-status">กำลังตรวจสอบสถานะ</div>
+      <div class="admin-actions">
+        <button id="turnOnButton" class="dialog-button" type="button">เปิดระบบ</button>
+        <button id="turnOffButton" class="dialog-button secondary" type="button">ปิดระบบ</button>
+      </div>
+      <button id="adminLogoutButton" class="dialog-button secondary" type="button">ออกจากระบบผู้ดูแล</button>
+    </div>
+
+    <button id="adminCloseButton" class="dialog-button secondary" type="button">ปิดหน้าต่าง</button>
+  </div>
+</div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbyxB0K9dEHFoosOupyOTocppqkty0XSyPfoPl7-xaMOdqtRbhsB2iY_V2iRCOC5-hP9/exec';
+
+const state = {
+  subjects: [],
+  subject: null,
+  student: null,
+  busy: false,
+  saved: false,
+  systemOpen: false,
+  adminPassword: ''
+};
+
+const $ = id => document.getElementById(id);
+let confirmResolver = null;
+
+function todayISO() {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'
+  }).formatToParts(new Date());
+  const obj = {};
+  parts.forEach(p => { if (p.type !== 'literal') obj[p.type] = p.value; });
+  return `${obj.year}-${obj.month}-${obj.day}`;
+}
+
+function thaiDate(value) {
+  if (!value) return '-';
+  const [y,m,d] = value.split('-').map(Number);
+  return new Intl.DateTimeFormat('th-TH', {
+    day:'numeric',month:'short',year:'numeric'
+  }).format(new Date(y,m-1,d,12));
+}
+
+function showStatus(title,message,type='loading',step=1,closable=false) {
+  $('statusTitle').textContent = title;
+  $('statusMessage').textContent = message;
+
+  const icon = $('statusIcon');
+  icon.className = `dialog-icon ${type}`;
+  icon.replaceChildren();
+
+  if (type === 'loading') {
+    const spinner = document.createElement('div');
+    spinner.className = 'spinner';
+    icon.appendChild(spinner);
+  } else {
+    icon.textContent = ({success:'✓',error:'!',warning:'!',info:'i'})[type] || 'i';
+  }
+
+  $('progress').classList.toggle('hidden',type==='error'||type==='warning');
+  $('stage').classList.toggle('hidden',type==='error'||type==='warning');
+
+  $('progress').querySelectorAll('span').forEach((el,index) => {
+    el.className = index+1 < step ? 'complete' :
+      index+1 === step ? (type==='success'?'complete':'active') : '';
+  });
+
+  $('stage').textContent = type==='success' ? 'ดำเนินการเรียบร้อยแล้ว' : `ขั้นตอนที่ ${step} จาก 3`;
+  $('statusClose').classList.toggle('hidden',!closable);
+  $('confirmActions').classList.add('hidden');
+  $('statusOverlay').classList.remove('hidden');
+
+  if (closable) $('statusClose').focus();
+}
+
+function hideStatus() {
+  $('statusOverlay').classList.add('hidden');
+}
+
+$('statusClose').addEventListener('click',hideStatus);
+
+/* ยืนยันด้วยการ์ดกลางหน้าจอ ไม่ใช้กล่องข้อความของ Chrome */
+function confirmCard(title,message,acceptText='ยืนยัน',cancelText='ยกเลิก',type='warning') {
+  showStatus(title,message,type,2,false);
+  $('statusClose').classList.add('hidden');
+  $('confirmActions').classList.remove('hidden');
+  $('confirmAccept').textContent = acceptText;
+  $('confirmCancel').textContent = cancelText;
+
+  return new Promise(resolve => {
+    confirmResolver = resolve;
+    $('confirmAccept').focus();
+  });
+}
+
+function resolveConfirmation(value) {
+  $('statusOverlay').classList.add('hidden');
+  $('confirmActions').classList.add('hidden');
+
+  if (confirmResolver) {
+    const resolve = confirmResolver;
+    confirmResolver = null;
+    resolve(value);
+  }
+}
+
+$('confirmAccept').addEventListener('click',() => resolveConfirmation(true));
+$('confirmCancel').addEventListener('click',() => resolveConfirmation(false));
+
+document.addEventListener('keydown',event => {
+  if (event.key !== 'Escape') return;
+
+  if (!$('statusOverlay').classList.contains('hidden')) {
+    if (!$('confirmActions').classList.contains('hidden')) {
+      resolveConfirmation(false);
+    } else if (!$('statusClose').classList.contains('hidden')) {
+      hideStatus();
+    }
+  }
+
+  if (!$('adminOverlay').classList.contains('hidden')) {
+    closeAdminWindow();
+  }
+});
+
+function showResult(title,message,type='success') {
+  showStatus(title,message,type,3,true);
+}
+
+function alertBox(id,message,type='error') {
+  $(id).className = `alert ${type}`;
+  $(id).textContent = message;
+  showResult(type==='success'?'สำเร็จเรียบร้อย':'ตรวจสอบข้อมูล',message,type==='success'?'success':'warning');
+}
+
+function clearAlert(id) {
+  $(id).className = 'alert hidden';
+  $(id).textContent = '';
+}
+
+async function getData(url) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error('เชื่อมต่อระบบไม่สำเร็จ');
+  return response.json();
+}
+
+async function postData(data) {
+  const response = await fetch(API_URL,{
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify(data)
+  });
+  if (!response.ok) throw new Error('เชื่อมต่อระบบไม่สำเร็จ');
+  return response.json();
+}
+
+function setButtonBusy(button,busy,text) {
+  button.disabled = busy;
+  button.textContent = busy ? 'กำลังดำเนินการ...' : text;
+}
+
+function applySystemState(open) {
+  state.systemOpen = open;
+  $('systemBanner').className = `system-banner ${open?'open':'closed'}`;
+  $('systemBanner').textContent = open ? '● ระบบเปิดรับการเช็กชื่อ' : '● ระบบปิดรับการเช็กชื่อชั่วคราว';
+  $('studentFormArea').classList.toggle('hidden',!open);
+  if (open) loadSubjects();
+}
+
+async function refreshSystemStatus() {
+  try {
+    const result = await getData(`${API_URL}?action=status&_=${Date.now()}`);
+    if (!result.ok) throw new Error();
+    applySystemState(result.open===true);
+  } catch {
+    $('systemBanner').className = 'system-banner closed';
+    $('systemBanner').textContent = 'ไม่สามารถเชื่อมต่อระบบได้ กรุณาลองใหม่';
+    $('studentFormArea').classList.add('hidden');
+  }
+}
+
+async function loadSubjects() {
+  if (!state.systemOpen) return;
+  try {
+    const result = await getData(`${API_URL}?action=subjects&_=${Date.now()}`);
+    if (!result.ok) throw new Error();
+    state.subjects = result.subjects || [];
+    renderSubjects();
+    if (!state.subjects.length) $('subjectList').textContent = 'ยังไม่มีรายวิชาที่เปิดใช้งาน';
+  } catch {
+    $('subjectList').textContent = 'โหลดรายวิชาไม่สำเร็จ กรุณาลองใหม่';
+  }
+}
+
+function renderSubjects() {
+  const list = $('subjectList');
+  list.replaceChildren();
+
+  if (!state.subjects.length) {
+    list.textContent = 'ไม่พบรายวิชา';
+    return;
+  }
+
+  state.subjects.forEach(subject => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'subject';
+
+    const icon = document.createElement('span');
+    icon.className = 'subject-icon';
+    icon.textContent = '📖';
+
+    const name = document.createElement('span');
+    name.className = 'subject-name';
+    name.textContent = subject.subjectName;
+
+    const check = document.createElement('span');
+    check.className = 'check';
+
+    button.append(icon,name,check);
+
+    button.addEventListener('click',() => {
+      if (state.busy||state.saved||!state.systemOpen) return;
+      state.subject = subject;
+
+      document.querySelectorAll('.subject').forEach(item => {
+        item.classList.remove('selected');
+        item.querySelector('.check').textContent = '';
+      });
+
+      button.classList.add('selected');
+      check.textContent = '✓';
+      $('summarySubject').textContent = subject.subjectName;
+    });
+
+    list.appendChild(button);
+  });
+}
+
+/* ค้นหานักเรียน */
+$('lookupForm').addEventListener('submit',async event => {
+  event.preventDefault();
+  if (state.busy||state.saved) return;
+  clearAlert('lookupAlert');
+
+  if (!state.systemOpen) {
+    showResult('ระบบปิดอยู่','ขณะนี้ปิดระบบเช็กชื่อชั่วคราว','warning');
+    return;
+  }
+  if (!state.subject) {
+    alertBox('lookupAlert','กรุณาเลือกรายวิชาก่อน');
+    return;
+  }
+
+  const studentId = $('studentId').value.trim();
+  if (!/^\d{5}$/.test(studentId)) {
+    alertBox('lookupAlert','กรุณากรอกรหัสนักเรียนให้ครบ 5 หลัก');
+    return;
+  }
+
+  state.busy = true;
+  setButtonBusy($('lookupButton'),true,'🔎 ตรวจสอบข้อมูล');
+  showStatus('กำลังตรวจสอบข้อมูล','กำลังค้นหารหัสนักเรียน กรุณารอสักครู่','loading',2);
+
+  try {
+    const result = await getData(`${API_URL}?action=lookup&studentId=${encodeURIComponent(studentId)}&_=${Date.now()}`);
+    if (!result.ok||!result.student) {
+      if (result.code==='SYSTEM_CLOSED') applySystemState(false);
+      throw new Error(result.message||'ไม่พบข้อมูลนักเรียน');
+    }
+
+    state.student = result.student;
+    $('studentName').textContent = `${result.student.firstName||''} ${result.student.lastName||''}`.trim();
+    $('studentClass').textContent = result.student.classLevel||'-';
+    $('studentRoom').textContent = result.student.room||'-';
+    $('studentNumber').textContent = result.student.number||'-';
+    $('studentInfo').classList.remove('hidden');
+    $('summaryStudent').textContent = `${$('studentName').textContent} (${result.student.studentId})`;
+
+    showResult('ตรวจสอบสำเร็จ','พบข้อมูลนักเรียนแล้ว กรุณาตรวจสอบชื่อให้ถูกต้อง','success');
+  } catch(error) {
+    state.student = null;
+    $('studentInfo').classList.add('hidden');
+    showResult('ตรวจสอบไม่สำเร็จ',error.message||'กรุณาลองใหม่','error');
+  } finally {
+    state.busy = false;
+    setButtonBusy($('lookupButton'),false,'🔎 ตรวจสอบข้อมูล');
+  }
+});
+
+function valueOf(name) {
+  return document.querySelector(`input[name="${name}"]:checked`)?.value||'';
+}
+
+function updateSummary() {
+  const status = valueOf('status');
+  $('summaryDate').textContent = thaiDate($('attendanceDate').value);
+  $('summaryHours').textContent = `${valueOf('hours')} ชั่วโมง`;
+  $('summaryStatus').textContent = status;
+  $('remarkBox').classList.toggle('hidden',status!=='ลากิจ');
+  $('remark').required = status==='ลากิจ';
+  if (status!=='ลากิจ') $('remark').value = '';
+}
+
+$('attendanceDate').addEventListener('change',updateSummary);
+document.querySelectorAll('input[name="hours"],input[name="status"]').forEach(input => input.addEventListener('change',updateSummary));
+
+$('studentId').addEventListener('input',event => {
+  event.target.value = event.target.value.replace(/\D/g,'').slice(0,5);
+  if (state.student&&event.target.value!==state.student.studentId) {
+    state.student = null;
+    $('studentInfo').classList.add('hidden');
+    $('summaryStudent').textContent = 'ยังไม่ได้ตรวจสอบ';
+  }
+});
+
+/* บันทึกการเข้าเรียน */
+$('saveButton').addEventListener('click',async () => {
+  if (state.busy||state.saved) return;
+  clearAlert('saveAlert');
+
+  if (!state.systemOpen) {
+    showResult('ระบบปิดอยู่','ไม่สามารถบันทึกข้อมูลได้ในขณะนี้','warning');
+    return;
+  }
+  if (!state.subject) {
+    showResult('ยังไม่ได้เลือกรายวิชา','กรุณาเลือกรายวิชาก่อนบันทึก','warning');
+    return;
+  }
+  if (!state.student) {
+    showResult('ยังไม่ได้ตรวจสอบข้อมูล','กรุณาตรวจสอบข้อมูลนักเรียนก่อน','warning');
+    return;
+  }
+
+  const attendanceDate = $('attendanceDate').value;
+  const hours = Number(valueOf('hours'));
+  const status = valueOf('status');
+  const remark = $('remark').value.trim();
+
+  if (!attendanceDate) {
+    showResult('กรุณาเลือกวันที่','เลือกวันที่เข้าเรียนก่อนบันทึก','warning');
+    return;
+  }
+  if (attendanceDate>todayISO()) {
+    showResult('วันที่ไม่ถูกต้อง','ไม่สามารถเลือกวันที่ในอนาคตได้','warning');
+    return;
+  }
+  if (status==='ลากิจ'&&!remark) {
+    showResult('กรุณาระบุเหตุผล','ต้องระบุเหตุผลในการลากิจ','warning');
+    $('remark').focus();
+    return;
+  }
+
+  const accepted = await confirmCard(
+    'ยืนยันการบันทึก',
+    `รายวิชา: ${state.subject.subjectName}\nนักเรียน: ${$('studentName').textContent}\nวันที่: ${thaiDate(attendanceDate)}\nชั่วโมง: ${hours}\nสถานะ: ${status}`,
+    'ยืนยันบันทึก',
+    'กลับไปตรวจสอบ',
+    'info'
+  );
+  if (!accepted) return;
+
+  state.busy = true;
+  setButtonBusy($('saveButton'),true,'📤 บันทึกการเข้าเรียน');
+  showStatus('กำลังบันทึกข้อมูล','กำลังตรวจสอบรายการซ้ำและบันทึกการเข้าเรียน','loading',3);
+
+  try {
+    const result = await postData({
+      action:'attendance',
+      studentId:state.student.studentId,
+      subjectId:state.subject.subjectId,
+      attendanceDate,
+      hours,
+      status,
+      remark:status==='ลากิจ'?remark:''
+    });
+
+    if (!result.ok) {
+      if (result.code==='SYSTEM_CLOSED') applySystemState(false);
+      throw new Error(result.message||'บันทึกข้อมูลไม่สำเร็จ');
+    }
+
+    state.saved = true;
+    $('saveAlert').className = 'alert success';
+    $('saveAlert').textContent = 'บันทึกการเข้าเรียนเรียบร้อยแล้ว';
+    $('saveButton').classList.add('hidden');
+    $('resetButton').classList.remove('hidden');
+
+    $('lookupButton').disabled = true;
+    $('studentId').disabled = true;
+    $('attendanceDate').disabled = true;
+    $('remark').disabled = true;
+    document.querySelectorAll('.subject,input[name="hours"],input[name="status"]').forEach(el => el.disabled = true);
+
+    showResult('บันทึกสำเร็จ','บันทึกการเข้าเรียนเรียบร้อยแล้ว','success');
+  } catch(error) {
+    $('saveAlert').className = 'alert error';
+    $('saveAlert').textContent = error.message||'บันทึกไม่สำเร็จ';
+    showResult('บันทึกไม่สำเร็จ',error.message||'กรุณาลองใหม่','error');
+  } finally {
+    state.busy = false;
+    if (!state.saved) setButtonBusy($('saveButton'),false,'📤 บันทึกการเข้าเรียน');
+  }
+});
+
+/* เริ่มรายการใหม่: ใช้การ์ดยืนยันแทน Chrome confirm */
+$('resetButton').addEventListener('click',async () => {
+  const accepted = await confirmCard('เริ่มรายการใหม่','ต้องการล้างข้อมูลรายการนี้และเริ่มใหม่หรือไม่?','เริ่มใหม่','ยกเลิก');
+  if (!accepted) return;
+
+  state.subject = null;
+  state.student = null;
+  state.saved = false;
+
+  $('studentId').value = '';
+  $('studentId').disabled = false;
+  $('studentInfo').classList.add('hidden');
+  $('attendanceDate').disabled = false;
+  $('attendanceDate').value = todayISO();
+  $('remark').value = '';
+  $('remark').disabled = false;
+
+  document.querySelector('input[name="hours"][value="1"]').checked = true;
+  document.querySelector('input[name="status"][value="มาเรียน"]').checked = true;
+
+  document.querySelectorAll('.subject,input[name="hours"],input[name="status"]').forEach(el => el.disabled = false);
+  $('lookupButton').disabled = false;
+  $('saveButton').classList.remove('hidden');
+  $('resetButton').classList.add('hidden');
+  $('summarySubject').textContent = 'ยังไม่ได้เลือก';
+  $('summaryStudent').textContent = 'ยังไม่ได้ตรวจสอบ';
+
+  clearAlert('lookupAlert');
+  clearAlert('saveAlert');
+  renderSubjects();
+  updateSummary();
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+
+/* ---------- Admin ---------- */
+$('adminOpenButton').addEventListener('click',() => {
+  $('adminOverlay').classList.remove('hidden');
+  $('adminLoginArea').classList.remove('hidden');
+  $('adminControlArea').classList.add('hidden');
+  $('adminPassword').value = '';
+  $('adminPassword').focus();
+});
+
+function closeAdminWindow() {
+  $('adminOverlay').classList.add('hidden');
+  state.adminPassword = '';
+  $('adminPassword').value = '';
+}
+$('adminCloseButton').addEventListener('click',closeAdminWindow);
+
+$('adminLoginButton').addEventListener('click',async () => {
+  const password = $('adminPassword').value;
+  if (!password) {
+    showResult('กรุณากรอกรหัสผ่าน','กรอกรหัสผ่านผู้ดูแลระบบก่อนดำเนินการ','warning');
+    return;
+  }
+
+  setButtonBusy($('adminLoginButton'),true,'เข้าสู่ระบบผู้ดูแล');
+  showStatus('กำลังตรวจสอบผู้ดูแล','กำลังตรวจสอบรหัสผ่าน','loading',1);
+
+  try {
+    const result = await postData({action:'adminAuth',password});
+    hideStatus();
+
+    if (!result.ok) {
+      showResult('เข้าสู่ระบบไม่ได้',result.message||'รหัสผ่านไม่ถูกต้อง','error');
+      return;
+    }
+
+    state.adminPassword = password;
+    $('adminLoginArea').classList.add('hidden');
+    $('adminControlArea').classList.remove('hidden');
+    updateAdminStatus(result.open);
+  } catch {
+    hideStatus();
+    showResult('เชื่อมต่อไม่ได้','ไม่สามารถตรวจสอบผู้ดูแลได้ กรุณาลองใหม่','error');
+  } finally {
+    setButtonBusy($('adminLoginButton'),false,'เข้าสู่ระบบผู้ดูแล');
+  }
+});
+
+function updateAdminStatus(open) {
+  const el = $('adminCurrentStatus');
+  el.className = `admin-status ${open?'open':'closed'}`;
+  el.textContent = open?'สถานะปัจจุบัน: เปิดระบบ':'สถานะปัจจุบัน: ปิดระบบ';
+  $('turnOnButton').disabled = open;
+  $('turnOffButton').disabled = !open;
+}
+
+async function changeSystemState(open) {
+  if (!state.adminPassword) return;
+
+  const accepted = await confirmCard(
+    open?'ยืนยันการเปิดระบบ':'ยืนยันการปิดระบบ',
+    open?'ต้องการเปิดรับการเช็กชื่อให้นักเรียนใช้งานหรือไม่?':'เมื่อตั้งปิดระบบ นักเรียนจะบันทึกการเข้าเรียนไม่ได้ ต้องการดำเนินการหรือไม่?',
+    open?'เปิดระบบ':'ปิดระบบ',
+    'ยกเลิก',
+    open?'info':'warning'
+  );
+  if (!accepted) return;
+
+  $('turnOnButton').disabled = true;
+  $('turnOffButton').disabled = true;
+  showStatus(open?'กำลังเปิดระบบ':'กำลังปิดระบบ','กำลังบันทึกสถานะระบบ','loading',2);
+
+  try {
+    const result = await postData({
+      action:'adminToggle',
+      password:state.adminPassword,
+      open
+    });
+
+    if (!result.ok) throw new Error(result.message||'เปลี่ยนสถานะไม่สำเร็จ');
+
+    applySystemState(result.open);
+    updateAdminStatus(result.open);
+    showResult(open?'เปิดระบบสำเร็จ':'ปิดระบบสำเร็จ',result.message,'success');
+  } catch(error) {
+    showResult('เปลี่ยนสถานะไม่สำเร็จ',error.message||'กรุณาลองใหม่','error');
+  } finally {
+    $('turnOnButton').disabled = state.systemOpen;
+    $('turnOffButton').disabled = !state.systemOpen;
+  }
+}
+
+$('turnOnButton').addEventListener('click',() => changeSystemState(true));
+$('turnOffButton').addEventListener('click',() => changeSystemState(false));
+
+$('adminLogoutButton').addEventListener('click',async () => {
+  const accepted = await confirmCard('ออกจากระบบผู้ดูแล','ต้องการออกจากหน้าผู้ดูแลระบบหรือไม่?','ออกจากระบบ','ยกเลิก');
+  if (!accepted) return;
+
+  state.adminPassword = '';
+  $('adminPassword').value = '';
+  $('adminControlArea').classList.add('hidden');
+  $('adminLoginArea').classList.remove('hidden');
+});
+
+/* เริ่มต้น */
+$('todayText').textContent = thaiDate(todayISO());
+$('attendanceDate').value = todayISO();
+updateSummary();
+refreshSystemStatus();
+</script>
+</body>
+</html>
